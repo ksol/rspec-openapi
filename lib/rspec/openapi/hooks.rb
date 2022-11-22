@@ -26,9 +26,16 @@ RSpec.configuration.after(:suite) do
       schema[:info].merge!(RSpec::OpenAPI.info)
       RSpec::OpenAPI::SchemaMerger.merge!(spec, schema)
       new_from_zero = {}
+      components = {}
       records.each do |record|
         begin
           record_schema = RSpec::OpenAPI::SchemaBuilder.build(record)
+
+          component_schema = record_schema.delete(:component_schema)
+          if component_schema.present?
+            components.update(component_schema[:id] => component_schema[:schema])
+          end
+
           RSpec::OpenAPI::SchemaMerger.merge!(spec, record_schema)
           RSpec::OpenAPI::SchemaMerger.merge!(new_from_zero, record_schema)
         rescue StandardError, NotImplementedError => e # e.g. SchemaBuilder raises a NotImplementedError
@@ -36,7 +43,7 @@ RSpec.configuration.after(:suite) do
         end
       end
       RSpec::OpenAPI::SchemaCleaner.cleanup!(spec, new_from_zero)
-      RSpec::OpenAPI::ComponentsUpdater.update!(spec, new_from_zero)
+      RSpec::OpenAPI::ComponentsUpdater.update!(spec, new_from_zero, components)
     end
   end
   if error_records.any?

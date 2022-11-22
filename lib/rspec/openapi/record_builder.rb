@@ -61,6 +61,7 @@ class << RSpec::OpenAPI::RecordBuilder = Object.new
       description: metadata_options[:description] || RSpec::OpenAPI.description_builder.call(example),
       security: metadata_options[:security],
       status: response.status,
+      response_schema_ref: metadata_options[:schema_ref],
       response_body: response_body,
       response_headers: response_headers,
       response_content_type: response.media_type,
