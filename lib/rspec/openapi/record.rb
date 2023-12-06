@@ -15,6 +15,7 @@ RSpec::OpenAPI::Record = Struct.new(
   :description,           # @param [String]  - "returns a status"
   :security,              # @param [Array]  - [{securityScheme1: []}]
   :status,                # @param [Integer] - 200
+  :response_schema_ref,   # @param [String] - "User"
   :response_body,         # @param [Object]  - {"status" => "ok"}
   :response_headers,      # @param [Array]  - [["header_key1", "header_value1"], ["header_key2", "header_value2"]]
   :response_content_type, # @param [String]  - "application/json"

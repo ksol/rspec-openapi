@@ -5,12 +5,12 @@ require_relative 'hash_helper'
 class << RSpec::OpenAPI::ComponentsUpdater = Object.new
   # @param [Hash] base
   # @param [Hash] fresh
-  def update!(base, fresh)
+  def update!(base, fresh, built)
     # Top-level schema: Used as the body of request or response
     top_level_refs = paths_to_top_level_refs(base)
     return if top_level_refs.empty?
 
-    fresh_schemas = build_fresh_schemas(top_level_refs, base, fresh)
+    fresh_schemas = build_fresh_schemas(top_level_refs, base, fresh, built)
 
     # Nested schema: References in Top-level schemas. May contain some top-level schema.
     generated_schema_names = fresh_schemas.keys
@@ -40,11 +40,13 @@ class << RSpec::OpenAPI::ComponentsUpdater = Object.new
 
   private
 
-  def build_fresh_schemas(references, base, fresh)
+  def build_fresh_schemas(references, base, fresh, built)
     references.inject({}) do |acc, paths|
       ref_link = dig_schema(base, paths)['$ref']
       schema_name = ref_link.gsub('#/components/schemas/', '')
       schema_body = dig_schema(fresh, paths)
+      schema_body = built[schema_name] if schema_body.keys == ["$ref"]
+
       RSpec::OpenAPI::SchemaMerger.merge!(acc, { schema_name => schema_body })
     end
   end

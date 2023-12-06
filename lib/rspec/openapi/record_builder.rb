@@ -11,7 +11,7 @@ class << RSpec::OpenAPI::RecordBuilder = Object.new
     request, response = extract_request_response(context)
     return if request.nil?
 
-    path, summary, tags, operation_id, required_request_params, raw_path_params, description, security =
+    path, summary, tags, operation_id, required_request_params, raw_path_params, description, security, schema_ref =
       extract_request_attributes(request, example)
 
     request_headers, response_headers = extract_headers(request, response)
@@ -31,6 +31,7 @@ class << RSpec::OpenAPI::RecordBuilder = Object.new
       description: description,
       security: security,
       status: response.status,
+      response_schema_ref: schema_ref,
       response_body: safe_parse_body(response),
       response_headers: response_headers,
       response_content_type: response.media_type,
@@ -67,6 +68,7 @@ class << RSpec::OpenAPI::RecordBuilder = Object.new
     operation_id = metadata[:operation_id]
     required_request_params = metadata[:required_request_params] || []
     security = metadata[:security]
+    schema_ref = metadata[:schema_ref]
     description = metadata[:description] || RSpec::OpenAPI.description_builder.call(example)
     raw_path_params = request.path_parameters
     path = request.path
@@ -86,7 +88,7 @@ class << RSpec::OpenAPI::RecordBuilder = Object.new
       raw_path_params = raw_path_params.slice(*(raw_path_params.keys - RSpec::OpenAPI.ignored_path_params))
     end
     summary ||= "#{request.method} #{path}"
-    [path, summary, tags, operation_id, required_request_params, raw_path_params, description, security]
+    [path, summary, tags, operation_id, required_request_params, raw_path_params, description, security, schema_ref]
   end
 
   def extract_request_response(context)

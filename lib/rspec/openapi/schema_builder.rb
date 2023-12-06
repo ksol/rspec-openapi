@@ -13,9 +13,23 @@ class << RSpec::OpenAPI::SchemaBuilder = Object.new
 
     if record.response_body
       disposition = normalize_content_disposition(record.response_content_disposition)
+
+      if record.response_schema_ref.present?
+        schema = { '$ref' => "#/components/schemas/#{record.response_schema_ref}" }
+        component_schema = {
+          id: record.response_schema_ref,
+          schema: build_property(record.response_body, disposition: disposition),
+        }
+      else
+        schema = build_property(record.response_body, disposition: disposition)
+        component_schema = nil
+      end
+
+
+
       response[:content] = {
         normalize_content_type(record.response_content_type) => {
-          schema: build_property(record.response_body, disposition: disposition),
+          schema: schema,
           example: response_example(record, disposition: disposition),
         }.compact,
       }
@@ -37,7 +51,8 @@ class << RSpec::OpenAPI::SchemaBuilder = Object.new
           }.compact,
         },
       },
-    }
+      component_schema: component_schema,
+    }.compact
   end
 
   private
